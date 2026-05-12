@@ -47,6 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "message": "MatchHub API is live"}
+
 # Static files for uploads
 UPLOAD_DIR = "/tmp/uploads" if os.getenv("VERCEL") else "uploads"
 if not os.path.exists(UPLOAD_DIR):
