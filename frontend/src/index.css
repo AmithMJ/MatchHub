@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --primary: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.4);
+  --accent: #fbbf24;
+  --bg-dark: #022c22;
+  --bg-card: rgba(6, 78, 59, 0.4);
+  --text-main: #f0fdf4;
+  --text-dim: #a7f3d0;
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(251, 191, 36, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+/* Premium Glassmorphism */
+.premium-glass {
+  background: rgba(6, 78, 59, 0.4);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 24px;
+}
+
+.premium-glass-light {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 16px;
+}
+
+/* Sports Buttons */
+.btn-primary {
+  @apply relative overflow-hidden px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 active:scale-95 flex items-center justify-center gap-3 text-sm;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 25px var(--primary-glow);
+  color: white;
+}
+
+.btn-primary::before {
+  content: '';
+  @apply absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-20deg] transition-transform duration-500;
+}
+
+.btn-primary:hover::before {
+  @apply translate-x-[100%];
+}
+
+/* Status Badges */
+.badge {
+  @apply px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest border shadow-sm;
+}
+
+.badge-pending { @apply bg-amber-500/20 text-amber-400 border-amber-500/30; }
+.badge-approved { @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/30; }
+.badge-rejected { @apply bg-rose-500/20 text-rose-400 border-rose-500/30; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Animated Backgrounds */
+@keyframes mesh-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.mesh-bg {
+  background: linear-gradient(-45deg, #022c22, #064e3b, #065f46, #022c22);
+  background-size: 400% 400%;
+  animation: mesh-gradient 20s ease infinite;
+}
+
+.sport-shadow {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);
+}
+
+::placeholder {
+  color: rgba(167, 243, 208, 0.3) !important;
+  opacity: 1;
+}
+
+::-ms-input-placeholder {
+  color: rgba(167, 243, 208, 0.3) !important;
+}
+
+.cricket-bg-overlay {
+  background-image: linear-gradient(to bottom, rgba(2, 44, 34, 0.9), rgba(2, 44, 34, 0.7)), url('/cricket_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
