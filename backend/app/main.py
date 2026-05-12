@@ -78,7 +78,10 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         if db_user:
             raise HTTPException(status_code=400, detail="Phone already registered")
         
-        # Super-defensive truncation at the API level
+        # Diagnostic: Check length
+        pwd_len = len(user.password) if user.password else 0
+        
+        # Super-defensive truncation
         safe_password = user.password[:70] if user.password else ""
         hashed_pwd = auth.get_password_hash(safe_password)
         
@@ -90,7 +93,9 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         return new_user
     except Exception as e:
         print(f"Registration error: {e}")
-        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+        # Return length for debugging
+        pwd_len = len(user.password) if user.password else 0
+        raise HTTPException(status_code=500, detail=f"Registration failed [Len:{pwd_len}]: {str(e)}")
 
 @app.post("/auth/login")
 def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
