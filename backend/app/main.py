@@ -78,7 +78,10 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         if db_user:
             raise HTTPException(status_code=400, detail="Phone already registered")
         
-        hashed_pwd = auth.get_password_hash(user.password)
+        # Super-defensive truncation at the API level
+        safe_password = user.password[:70] if user.password else ""
+        hashed_pwd = auth.get_password_hash(safe_password)
+        
         new_user = models.User(phone=user.phone, role=user.role, password_hash=hashed_pwd)
         
         db.add(new_user)
