@@ -7,17 +7,20 @@ from typing import List
 import shutil
 import datetime
 
-from . import models, schemas, database
-from .core import auth
-from .database import engine
+from app import models, schemas, database
+from app.core import auth
+from app.database import engine
 
-# Create tables
-models.Base.metadata.create_all(bind=engine)
+app = FastAPI(title="MatchHub API")
 
 # Auto-migration for missing columns
-def migrate_db():
+@app.on_event("startup")
+async def startup_event():
     from sqlalchemy import text
     try:
+        # Create tables
+        models.Base.metadata.create_all(bind=engine)
+        
         with engine.begin() as conn:
             # 1. Check/Add tournament_id column to players
             try:
@@ -28,19 +31,12 @@ def migrate_db():
                 conn.execute(text("ALTER TABLE players ADD CONSTRAINT fk_player_tournament FOREIGN KEY (tournament_id) REFERENCES tournaments(id)"))
             
             # 2. Link existing players to the most recent open tournament
-            print("Syncing existing players with active tournament...")
             open_tournament = conn.execute(text("SELECT id FROM tournaments WHERE status = 'Open' ORDER BY date ASC LIMIT 1")).fetchone()
             if open_tournament:
                 tournament_id = open_tournament[0]
                 conn.execute(text(f"UPDATE players SET tournament_id = {tournament_id} WHERE tournament_id IS NULL"))
-                print(f"Linked existing players to tournament ID: {tournament_id}")
-            
     except Exception as e:
-        print(f"Migration error: {e}")
-
-migrate_db()
-
-app = FastAPI(title="MatchHub API")
+        print(f"Startup/Migration error: {e}")
 
 # CORS
 app.add_middleware(
@@ -52,7 +48,7 @@ app.add_middleware(
 )
 
 # Static files for uploads
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "/tmp/uploads" if os.getenv("VERCEL") else "uploads"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
