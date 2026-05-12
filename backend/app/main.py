@@ -91,11 +91,15 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
 
 @app.post("/auth/login")
 def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    user = db.query(models.User).filter(models.User.phone == form_data.phone).first()
-    if not user or not auth.verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Incorrect phone or password")
-    access_token = auth.create_access_token(data={"sub": user.phone})
-    return {"access_token": access_token, "token_type": "bearer", "role": user.role, "phone": user.phone}
+    try:
+        user = db.query(models.User).filter(models.User.phone == form_data.phone).first()
+        if not user or not auth.verify_password(form_data.password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Incorrect phone or password")
+        access_token = auth.create_access_token(data={"sub": user.phone})
+        return {"access_token": access_token, "token_type": "bearer", "role": user.role, "phone": user.phone}
+    except Exception as e:
+        print(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 # --- TOURNAMENTS ---
 @app.post("/tournaments", response_model=schemas.Tournament)
