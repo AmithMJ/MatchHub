@@ -51,6 +51,15 @@ app.add_middleware(
 def health_check():
     return {"status": "ok", "message": "MatchHub API is live"}
 
+@app.get("/db-test")
+def db_test(db: Session = Depends(database.get_db)):
+    try:
+        # Try to count users to see if table exists and DB is connected
+        count = db.query(models.User).count()
+        return {"status": "connected", "user_count": count}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
 # Static files for uploads
 UPLOAD_DIR = "/tmp/uploads" if os.getenv("VERCEL") else "uploads"
 if not os.path.exists(UPLOAD_DIR):
