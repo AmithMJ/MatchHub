@@ -47,6 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to MatchHub API", "health": "/health", "test": "/db-test"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "message": "MatchHub API is live"}
