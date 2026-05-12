@@ -73,15 +73,21 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 # --- AUTH ---
 @app.post("/auth/register", response_model=schemas.User)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    db_user = db.query(models.User).filter(models.User.phone == user.phone).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Phone already registered")
-    hashed_pwd = auth.get_password_hash(user.password)
-    new_user = models.User(phone=user.phone, role=user.role, password_hash=hashed_pwd)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    try:
+        db_user = db.query(models.User).filter(models.User.phone == user.phone).first()
+        if db_user:
+            raise HTTPException(status_code=400, detail="Phone already registered")
+        
+        hashed_pwd = auth.get_password_hash(user.password)
+        new_user = models.User(phone=user.phone, role=user.role, password_hash=hashed_pwd)
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except Exception as e:
+        print(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @app.post("/auth/login")
 def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
