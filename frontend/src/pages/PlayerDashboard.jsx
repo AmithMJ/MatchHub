@@ -49,7 +49,11 @@ const PlayerDashboard = () => {
           <p className="text-emerald-500/60 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Welcome back, {status.player_name.split(' ')[0]}</p>
         </div>
         <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center overflow-hidden">
-           <User className="text-emerald-400" size={28} />
+           {status.photo_url ? (
+             <img src={status.photo_url} className="w-full h-full object-cover" alt="Profile" onError={(e) => e.target.style.display = 'none'} />
+           ) : (
+             <User className="text-emerald-400" size={28} />
+           )}
         </div>
       </div>
 
