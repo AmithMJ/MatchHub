@@ -17,6 +17,12 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+// Safety filter for old database records with dead placeholder links
+const getSafeUrl = (url, fallback) => {
+  if (!url || url.includes('via.placeholder.com')) return fallback;
+  return url;
+};
+
 const PlayerList = () => {
   const token = localStorage.getItem('token');
   const queryClient = useQueryClient();
@@ -115,7 +121,7 @@ const PlayerList = () => {
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-emerald-950 overflow-hidden border-2 border-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
                 <img
-                  src={player.photo_url || 'https://ui-avatars.com/api/?name=' + player.player_name}
+                  src={getSafeUrl(player.photo_url, 'https://ui-avatars.com/api/?name=' + player.player_name)}
                   alt={player.player_name}
                   className="w-full h-full object-cover"
                   onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + player.player_name}
@@ -173,7 +179,7 @@ const PlayerList = () => {
                   <div className="flex gap-5">
                     <div className="w-20 h-20 rounded-3xl bg-emerald-950 overflow-hidden border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
                       <img
-                        src={selectedPlayer.photo_url || 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name}
+                        src={getSafeUrl(selectedPlayer.photo_url, 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name)}
                         className="w-full h-full object-cover"
                         alt=""
                         onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name}
@@ -194,7 +200,7 @@ const PlayerList = () => {
                     <p className="text-[10px] text-emerald-500/60 uppercase font-black tracking-[0.2em] mb-4">Payment Proof</p>
                     <div className="w-full h-72 bg-emerald-950 rounded-2xl overflow-hidden border border-emerald-900 shadow-inner">
                       <img
-                        src={selectedPlayer.payment_image_url}
+                        src={getSafeUrl(selectedPlayer.payment_image_url, null)}
                         className="w-full h-full object-contain"
                         alt="Payment"
                         onError={(e) => e.target.style.display = 'none'}

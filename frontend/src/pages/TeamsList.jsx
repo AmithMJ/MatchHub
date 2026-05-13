@@ -5,6 +5,11 @@ import api from '../utils/api';
 import { Plus, Trophy, Phone, User, Camera, X, Shield, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const getSafeUrl = (url, fallback) => {
+  if (!url || url.includes('via.placeholder.com')) return fallback;
+  return url;
+};
+
 const TeamsList = () => {
   const token = localStorage.getItem('token');
   const location = useLocation();
@@ -92,7 +97,7 @@ const TeamsList = () => {
             </div>
             <div className="w-24 h-24 rounded-[32px] bg-emerald-950 border-2 border-emerald-500/10 overflow-hidden mb-5 shadow-2xl group-hover:border-emerald-400 transition-all duration-500 relative z-10">
               <img 
-                src={team.logo || 'https://ui-avatars.com/api/?name=' + team.team_name} 
+                src={getSafeUrl(team.logo, 'https://ui-avatars.com/api/?name=' + team.team_name)} 
                 alt={team.team_name} 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + team.team_name}
