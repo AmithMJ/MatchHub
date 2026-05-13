@@ -10,6 +10,16 @@ import datetime
 from app import models, schemas, database
 from app.core import auth
 from app.database import engine
+import cloudinary
+import cloudinary.uploader
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key = os.getenv("CLOUDINARY_API_KEY"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET"),
+    secure = True
+)
 
 app = FastAPI(title="MatchHub API")
 
@@ -144,13 +154,27 @@ async def create_team(
     db: Session = Depends(database.get_db),
     current_user=Depends(auth.get_admin_user)
 ):
-    logo_path = None
+    # --- Upload Handling (Cloudinary vs Local) ---
+    is_cloudinary = all([os.getenv("CLOUDINARY_CLOUD_NAME"), os.getenv("CLOUDINARY_API_KEY"), os.getenv("CLOUDINARY_API_SECRET")])
+    logo_url_final = None
+
     if logo:
-        logo_path = f"{UPLOAD_DIR}/team_{team_name}_{logo.filename}"
-        with open(logo_path, "wb") as buffer:
-            shutil.copyfileobj(logo.file, buffer)
+        if is_cloudinary:
+            try:
+                logo_upload = cloudinary.uploader.upload(logo.file, folder="matchhub/teams")
+                logo_url_final = logo_upload.get("secure_url")
+            except Exception as e:
+                print(f"Cloudinary Team Logo Error: {e}")
+                is_cloudinary = False
+
+        if not is_cloudinary or not logo_url_final:
+            logo_filename = f"team_{team_name}_{logo.filename}"
+            logo_path = os.path.join(UPLOAD_DIR, logo_filename)
+            with open(logo_path, "wb") as buffer:
+                shutil.copyfileobj(logo.file, buffer)
+            logo_url_final = logo_filename
     
-    db_team = models.Team(team_name=team_name, captain=captain, contact=contact, logo=logo_path)
+    db_team = models.Team(team_name=team_name, captain=captain, contact=contact, logo=logo_url_final)
     db.add(db_team)
     db.commit()
     db.refresh(db_team)
@@ -189,20 +213,39 @@ async def register_player(
         new_user = models.User(phone=phone, role="player", password_hash=hashed_pwd)
         db.add(new_user)
     
-    # File names for web access
-    photo_filename = f"player_{phone}_{photo.filename}"
-    payment_filename = f"pay_{phone}_{payment_screenshot.filename}"
+    # --- Upload Handling (Cloudinary vs Local) ---
+    is_cloudinary = all([os.getenv("CLOUDINARY_CLOUD_NAME"), os.getenv("CLOUDINARY_API_KEY"), os.getenv("CLOUDINARY_API_SECRET")])
     
-    # Save photo
-    photo_path = os.path.join(UPLOAD_DIR, photo_filename)
-    with open(photo_path, "wb") as buffer:
-        shutil.copyfileobj(photo.file, buffer)
-    
-    # Save payment screenshot
-    payment_path = os.path.join(UPLOAD_DIR, payment_filename)
-    with open(payment_path, "wb") as buffer:
-        shutil.copyfileobj(payment_screenshot.file, buffer)
-    
+    if is_cloudinary:
+        try:
+            # Upload Photo to Cloudinary
+            photo_upload = cloudinary.uploader.upload(photo.file, folder="matchhub/players")
+            photo_url_final = photo_upload.get("secure_url")
+            
+            # Upload Payment to Cloudinary
+            payment_upload = cloudinary.uploader.upload(payment_screenshot.file, folder="matchhub/payments")
+            payment_url_final = payment_upload.get("secure_url")
+        except Exception as e:
+            print(f"Cloudinary Error: {e}")
+            # Fallback to local if cloud fails
+            is_cloudinary = False
+
+    if not is_cloudinary:
+        # Fallback to local storage
+        photo_filename = f"player_{phone}_{photo.filename}"
+        payment_filename = f"pay_{phone}_{payment_screenshot.filename}"
+        
+        photo_path = os.path.join(UPLOAD_DIR, photo_filename)
+        with open(photo_path, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        
+        payment_path = os.path.join(UPLOAD_DIR, payment_filename)
+        with open(payment_path, "wb") as buffer:
+            shutil.copyfileobj(payment_screenshot.file, buffer)
+        
+        photo_url_final = photo_filename
+        payment_url_final = payment_filename
+
     # Auto-link to the currently open tournament
     open_tournament = db.query(models.Tournament).filter(models.Tournament.status == "Open").order_by(models.Tournament.date.asc()).first()
     tournament_id = open_tournament.id if open_tournament else None
@@ -216,8 +259,8 @@ async def register_player(
         team_id=team_id,
         tournament_id=tournament_id,
         emergency_contact=emergency_contact,
-        photo_url=photo_filename, # Store just the filename
-        payment_image_url=payment_filename # Store just the filename
+        photo_url=photo_url_final, 
+        payment_image_url=payment_url_final
     )
     db.add(db_player)
     db.commit()
