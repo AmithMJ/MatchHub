@@ -23,7 +23,7 @@ cloudinary.config(
     secure = True
 )
 
-app = FastAPI(title="MatchHub API")
+app = FastAPI(title="MatchHub API", version="1.0.1") # v1.0.1 - SSL & Cloudinary Fix
 
 # Auto-migration for missing columns
 @app.on_event("startup")
