@@ -10,7 +10,9 @@ import datetime
 from app import models, schemas, database
 from app.core import auth
 from app.database import engine
+# pyrefly: ignore [missing-import]
 import cloudinary
+# pyrefly: ignore [missing-import]
 import cloudinary.uploader
 
 # Configure Cloudinary
