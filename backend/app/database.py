@@ -14,7 +14,14 @@ if "ssl=true" in SQLALCHEMY_DATABASE_URL.lower():
     connect_args["ssl"] = {"ca": None} # This forces SSL without needing a specific CA file
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("?ssl=true", "").replace("&ssl=true", "")
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args=connect_args,
+    pool_recycle=300,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
