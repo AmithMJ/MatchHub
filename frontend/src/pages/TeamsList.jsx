@@ -92,10 +92,10 @@ const TeamsList = () => {
             </div>
             <div className="w-24 h-24 rounded-[32px] bg-emerald-950 border-2 border-emerald-500/10 overflow-hidden mb-5 shadow-2xl group-hover:border-emerald-400 transition-all duration-500 relative z-10">
               <img 
-                src={`http://localhost:8080/${team.logo}`} 
+                src={team.logo || 'https://ui-avatars.com/api/?name=' + team.team_name} 
                 alt={team.team_name} 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
+                onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + team.team_name}
               />
             </div>
             <h3 className="font-black text-white leading-tight mb-3 text-lg tracking-tight relative z-10">{team.team_name}</h3>

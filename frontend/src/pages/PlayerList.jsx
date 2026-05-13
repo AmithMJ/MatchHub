@@ -115,10 +115,10 @@ const PlayerList = () => {
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-emerald-950 overflow-hidden border-2 border-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
                 <img
-                  src={`http://localhost:8080/${player.photo_url}`}
+                  src={player.photo_url || 'https://ui-avatars.com/api/?name=' + player.player_name}
                   alt={player.player_name}
                   className="w-full h-full object-cover"
-                  onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
+                  onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + player.player_name}
                 />
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-900 rounded-lg flex items-center justify-center border-2 border-emerald-950 shadow-lg">
@@ -173,10 +173,10 @@ const PlayerList = () => {
                   <div className="flex gap-5">
                     <div className="w-20 h-20 rounded-3xl bg-emerald-950 overflow-hidden border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
                       <img
-                        src={`http://localhost:8080/${selectedPlayer.photo_url}`}
+                        src={selectedPlayer.photo_url || 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name}
                         className="w-full h-full object-cover"
                         alt=""
-                        onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
+                        onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name}
                       />
                     </div>
                     <div>
@@ -194,10 +194,10 @@ const PlayerList = () => {
                     <p className="text-[10px] text-emerald-500/60 uppercase font-black tracking-[0.2em] mb-4">Payment Proof</p>
                     <div className="w-full h-72 bg-emerald-950 rounded-2xl overflow-hidden border border-emerald-900 shadow-inner">
                       <img
-                        src={`http://localhost:8080/${selectedPlayer.payment_image_url}`}
+                        src={selectedPlayer.payment_image_url}
                         className="w-full h-full object-contain"
                         alt="Payment"
-                        onError={(e) => e.target.src = 'https://via.placeholder.com/400?text=No+Payment+Image'}
+                        onError={(e) => e.target.style.display = 'none'}
                       />
                     </div>
                   </div>
