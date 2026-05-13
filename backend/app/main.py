@@ -175,13 +175,17 @@ async def register_player(
         new_user = models.User(phone=phone, role="player", password_hash=hashed_pwd)
         db.add(new_user)
     
+    # File names for web access
+    photo_filename = f"player_{phone}_{photo.filename}"
+    payment_filename = f"pay_{phone}_{payment_screenshot.filename}"
+    
     # Save photo
-    photo_path = f"{UPLOAD_DIR}/player_{phone}_{photo.filename}"
+    photo_path = os.path.join(UPLOAD_DIR, photo_filename)
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(photo.file, buffer)
     
     # Save payment screenshot
-    payment_path = f"{UPLOAD_DIR}/pay_{phone}_{payment_screenshot.filename}"
+    payment_path = os.path.join(UPLOAD_DIR, payment_filename)
     with open(payment_path, "wb") as buffer:
         shutil.copyfileobj(payment_screenshot.file, buffer)
     
@@ -198,8 +202,8 @@ async def register_player(
         team_id=team_id,
         tournament_id=tournament_id,
         emergency_contact=emergency_contact,
-        photo_url=photo_path,
-        payment_image_url=payment_path
+        photo_url=photo_filename, # Store just the filename
+        payment_image_url=payment_filename # Store just the filename
     )
     db.add(db_player)
     db.commit()
@@ -213,6 +217,11 @@ def list_players(db: Session = Depends(database.get_db), current_user=Depends(au
     for p in players:
         team = db.query(models.Team).filter(models.Team.id == p.team_id).first()
         tournament = db.query(models.Tournament).filter(models.Tournament.id == p.tournament_id).first() if p.tournament_id else None
+        # Construct full web URLs for images
+        base_url = os.getenv("API_URL", "http://localhost:8080")
+        photo_url = f"{base_url}/uploads/{p.photo_url}" if p.photo_url else None
+        payment_url = f"{base_url}/uploads/{p.payment_image_url}" if p.payment_image_url else None
+
         result.append({
             "id": p.id,
             "player_name": p.player_name,
@@ -225,8 +234,8 @@ def list_players(db: Session = Depends(database.get_db), current_user=Depends(au
             "tournament_id": p.tournament_id,
             "tournament_name": tournament.name if tournament else "No Tournament",
             "tournament_status": tournament.status if tournament else None,
-            "photo_url": p.photo_url,
-            "payment_image_url": p.payment_image_url,
+            "photo_url": photo_url,
+            "payment_image_url": payment_url,
             "payment_status": p.payment_status,
             "emergency_contact": p.emergency_contact,
             "created_at": p.created_at
