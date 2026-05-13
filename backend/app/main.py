@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form
+from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -150,8 +150,15 @@ async def create_team(
     return db_team
 
 @app.get("/teams", response_model=List[schemas.Team])
-def list_teams(db: Session = Depends(database.get_db)):
-    return db.query(models.Team).all()
+def list_teams(request: Request, db: Session = Depends(database.get_db)):
+    teams = db.query(models.Team).all()
+    base_url = str(request.base_url).rstrip('/')
+    for team in teams:
+        if team.logo and not team.logo.startswith('http'):
+            # Convert internal path/filename to full URL
+            filename = os.path.basename(team.logo)
+            team.logo = f"{base_url}/uploads/{filename}"
+    return teams
 
 # --- PLAYERS ---
 @app.post("/players/register")
@@ -211,16 +218,23 @@ async def register_player(
     return db_player
 
 @app.get("/players")
-def list_players(db: Session = Depends(database.get_db), current_user=Depends(auth.get_admin_user)):
+def list_players(request: Request, db: Session = Depends(database.get_db), current_user=Depends(auth.get_admin_user)):
     players = db.query(models.Player).all()
     result = []
+    
+    # Get the base URL dynamically from the request (works on Localhost AND Vercel)
+    base_url = str(request.base_url).rstrip('/')
+    
     for p in players:
         team = db.query(models.Team).filter(models.Team.id == p.team_id).first()
         tournament = db.query(models.Tournament).filter(models.Tournament.id == p.tournament_id).first() if p.tournament_id else None
-        # Construct full web URLs for images
-        base_url = os.getenv("API_URL", "http://localhost:8080")
-        photo_url = f"{base_url}/uploads/{p.photo_url}" if p.photo_url else None
-        payment_url = f"{base_url}/uploads/{p.payment_image_url}" if p.payment_image_url else None
+        
+        # Clean up filenames and construct full web URLs
+        photo_fn = os.path.basename(p.photo_url) if p.photo_url else None
+        pay_fn = os.path.basename(p.payment_image_url) if p.payment_image_url else None
+        
+        photo_url = f"{base_url}/uploads/{photo_fn}" if photo_fn else None
+        payment_url = f"{base_url}/uploads/{pay_fn}" if pay_fn else None
 
         result.append({
             "id": p.id,
@@ -261,20 +275,26 @@ def reject_player(player_id: int, db: Session = Depends(database.get_db), curren
     return {"message": "Player rejected"}
 
 @app.get("/players/status/{phone}")
-def get_player_status(phone: str, db: Session = Depends(database.get_db)):
+def get_player_status(request: Request, phone: str, db: Session = Depends(database.get_db)):
     player = db.query(models.Player).filter(models.Player.phone == phone).first()
     if not player:
         raise HTTPException(status_code=404, detail="No registration found for this mobile number")
     
     # Get team name
     team = db.query(models.Team).filter(models.Team.id == player.team_id).first()
+    base_url = str(request.base_url).rstrip('/')
     
+    # URLs
+    photo_fn = os.path.basename(player.photo_url) if player.photo_url else None
+    photo_url = f"{base_url}/uploads/{photo_fn}" if photo_fn else None
+
     return {
         "player_name": player.player_name,
         "payment_status": player.payment_status,
         "team_name": team.team_name if team else "Unknown",
         "jersey_no": player.jersey_no,
         "role": player.role,
+        "photo_url": photo_url,
         "created_at": player.created_at
     }
 
