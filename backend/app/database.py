@@ -8,10 +8,17 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Handle SSL (Simple)
+# Handle SSL & Sanitize URL
 connect_args = {}
-if SQLALCHEMY_DATABASE_URL and "ssl" in SQLALCHEMY_DATABASE_URL.lower():
-    connect_args["ssl"] = {"ca": None}
+if SQLALCHEMY_DATABASE_URL:
+    url_lower = SQLALCHEMY_DATABASE_URL.lower()
+    if "ssl" in url_lower:
+        # Enable SSL
+        connect_args["ssl"] = {"ca": None}
+        # Remove ssl_mode from URL string to prevent pymysql crash
+        if "?" in SQLALCHEMY_DATABASE_URL:
+            base_url = SQLALCHEMY_DATABASE_URL.split('?')[0]
+            SQLALCHEMY_DATABASE_URL = base_url
 
 from sqlalchemy.pool import NullPool
 
