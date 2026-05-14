@@ -8,9 +8,14 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Safety Check: Prevent crash if DATABASE_URL is missing
+if not SQLALCHEMY_DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:password@localhost/db"
+    print("WARNING: DATABASE_URL not found! Using local fallback to prevent crash.")
+
 # Handle SSL for Aiven/Vercel (Automatic Detection)
 connect_args = {}
-if "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
+if SQLALCHEMY_DATABASE_URL and "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
     # Force SSL for Aiven
     if "mysqlconnector" in SQLALCHEMY_DATABASE_URL:
         # mysql-connector-python settings
