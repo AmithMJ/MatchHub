@@ -233,10 +233,10 @@ async def register_player(
         db.add(new_user)
     
     # --- Upload Handling (Cloudinary vs Local) ---
-    # Re-verify env vars
-    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
-    api_key = os.getenv("CLOUDINARY_API_KEY")
-    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    # Re-verify env vars and strip whitespace
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "").strip()
+    api_key = os.getenv("CLOUDINARY_API_KEY", "").strip()
+    api_secret = os.getenv("CLOUDINARY_API_SECRET", "").strip()
     
     is_cloudinary = all([cloud_name, api_key, api_secret])
     
@@ -245,7 +245,14 @@ async def register_player(
 
     if is_cloudinary:
         try:
-            print(f"DEBUG: Attempting Cloudinary upload to {cloud_name}...")
+            # Re-configure to ensure latest values are used
+            cloudinary.config(
+                cloud_name=cloud_name,
+                api_key=api_key,
+                api_secret=api_secret,
+                secure=True
+            )
+            print(f"DEBUG: Attempting Cloudinary upload to '{cloud_name}'...")
             # Reset file pointer just in case
             photo.file.seek(0)
             photo_upload = cloudinary.uploader.upload(photo.file, folder="matchhub/players")
