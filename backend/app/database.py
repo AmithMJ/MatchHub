@@ -15,18 +15,23 @@ if not SQLALCHEMY_DATABASE_URL:
 
 # Handle SSL for Aiven/Vercel (Automatic Detection)
 connect_args = {}
-if SQLALCHEMY_DATABASE_URL and "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
-    # Force SSL for Aiven
-    if "mysqlconnector" in SQLALCHEMY_DATABASE_URL:
-        # mysql-connector-python settings
-        connect_args["ssl_mode"] = "REQUIRED"
-    else:
-        # pymysql settings
-        connect_args["ssl"] = {"ca": None}
+if SQLALCHEMY_DATABASE_URL:
+    # Fix common typo where :PORT is left as a placeholder
+    if ":PORT" in SQLALCHEMY_DATABASE_URL:
+        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace(":PORT", ":20810")
     
-    # Clean up any existing params from the URL
-    if "?" in SQLALCHEMY_DATABASE_URL:
-        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.split('?')[0]
+    if "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
+        # Force SSL for Aiven
+        if "mysqlconnector" in SQLALCHEMY_DATABASE_URL:
+            # mysql-connector-python settings
+            connect_args["ssl_mode"] = "REQUIRED"
+        else:
+            # pymysql settings
+            connect_args["ssl"] = {"ca": None}
+        
+        # Clean up any existing params from the URL
+        if "?" in SQLALCHEMY_DATABASE_URL:
+            SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.split('?')[0]
 
 from sqlalchemy.pool import NullPool
 
