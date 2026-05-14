@@ -85,9 +85,10 @@ def db_test(db: Session = Depends(database.get_db)):
         return {"status": "error", "error": str(e)}
 
 # Static files for uploads
-# Setup upload directory with absolute path for reliability
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_DIR = os.path.join(os.path.dirname(BASE_DIR), "uploads")
+# Setup Uploads Directory (Absolute Path for reliability)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # This is the 'app' folder
+BACKEND_DIR = os.path.dirname(BASE_DIR) # This is the 'backend' folder
+UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploads")
 
 if os.getenv("VERCEL"):
     UPLOAD_DIR = "/tmp/uploads"
