@@ -90,6 +90,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # This is the 'app' folder
 BACKEND_DIR = os.path.dirname(BASE_DIR) # This is the 'backend' folder
 UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploads")
 
+def sanitize_filename(filename: str) -> str:
+    # Remove spaces and parentheses for web safety
+    return filename.replace(" ", "_").replace("(", "").replace(")", "")
+
 if os.getenv("VERCEL"):
     UPLOAD_DIR = "/tmp/uploads"
 
@@ -179,11 +183,11 @@ async def create_team(
                 is_cloudinary = False
 
         if not is_cloudinary or not logo_url_final:
-            logo_filename = f"team_{team_name}_{logo.filename}"
-            logo_path = os.path.join(UPLOAD_DIR, logo_filename)
+            safe_filename = sanitize_filename(f"team_{team_name}_{logo.filename}")
+            logo_path = os.path.join(UPLOAD_DIR, safe_filename)
             with open(logo_path, "wb") as buffer:
                 shutil.copyfileobj(logo.file, buffer)
-            logo_url_final = logo_filename
+            logo_url_final = safe_filename
     
     db_team = models.Team(team_name=team_name, captain=captain, contact=contact, logo=logo_url_final)
     db.add(db_team)
@@ -238,13 +242,12 @@ async def register_player(
             payment_url_final = payment_upload.get("secure_url")
         except Exception as e:
             print(f"Cloudinary Error: {e}")
-            # Fallback to local if cloud fails
             is_cloudinary = False
 
     if not is_cloudinary:
-        # Fallback to local storage
-        photo_filename = f"player_{phone}_{photo.filename}"
-        payment_filename = f"pay_{phone}_{payment_screenshot.filename}"
+        # Local Fallback
+        photo_filename = sanitize_filename(f"player_{phone}_{photo.filename}")
+        payment_filename = sanitize_filename(f"pay_{phone}_{payment_screenshot.filename}")
         
         photo_path = os.path.join(UPLOAD_DIR, photo_filename)
         with open(photo_path, "wb") as buffer:
