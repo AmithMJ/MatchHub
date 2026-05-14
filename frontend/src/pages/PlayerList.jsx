@@ -123,10 +123,13 @@ const PlayerList = () => {
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-emerald-950 overflow-hidden border-2 border-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
                 <img
-                  src={getSafeUrl(player.photo_url, 'https://ui-avatars.com/api/?name=' + player.player_name)}
+                  src={getSafeUrl(player.photo_url, player.player_name)}
                   alt={player.player_name}
                   className="w-full h-full object-cover"
-                  onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + player.player_name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.player_name)}&background=random`;
+                  }}
                 />
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-900 rounded-lg flex items-center justify-center border-2 border-emerald-950 shadow-lg">
