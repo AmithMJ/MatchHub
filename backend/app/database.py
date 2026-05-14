@@ -21,9 +21,9 @@ if SQLALCHEMY_DATABASE_URL:
         SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace(":PORT", ":20810")
     
     if "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
-        # Force SSL for Aiven
+        # Aiven REQUIRES SSL.
         if "mysqlconnector" in SQLALCHEMY_DATABASE_URL:
-            # mysql-connector-python settings
+            # Try most compatible mysqlconnector settings
             connect_args["ssl_mode"] = "REQUIRED"
         else:
             # pymysql settings
@@ -33,14 +33,25 @@ if SQLALCHEMY_DATABASE_URL:
         if "?" in SQLALCHEMY_DATABASE_URL:
             SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.split('?')[0]
 
-from sqlalchemy.pool import NullPool
-
-# Serverless-Optimized Engine (Forces connection cleanup per request)
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args=connect_args,
-    poolclass=NullPool
-)
+# Serverless-Optimized Engine
+try:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL, 
+        connect_args=connect_args,
+        poolclass=NullPool
+    )
+except Exception as e:
+    # Fallback for older mysqlconnector versions
+    if "ssl_mode" in str(e):
+        connect_args.pop("ssl_mode", None)
+        connect_args["ssl_disabled"] = False
+        engine = create_engine(
+            SQLALCHEMY_DATABASE_URL, 
+            connect_args=connect_args,
+            poolclass=NullPool
+        )
+    else:
+        raise e
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
