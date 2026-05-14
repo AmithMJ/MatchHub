@@ -51,10 +51,15 @@ async def startup_event():
         print(f"Startup/Migration error: {e}")
 
 # CORS
-# Allow all origins for production stability
+# Allow explicit origins for production stability
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://matchhub-portal.vercel.app", "http://localhost:3000", "*"], 
+    allow_origins=[
+        "https://matchhub-portal.vercel.app",
+        "https://matchhub-frontend.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
