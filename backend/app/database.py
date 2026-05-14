@@ -8,15 +8,13 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Handle SSL for Aiven/Vercel
+# Handle SSL for Aiven/Vercel (Automatic Detection)
 connect_args = {}
-url_lower = SQLALCHEMY_DATABASE_URL.lower()
-if "ssl=true" in url_lower or "ssl_mode=required" in url_lower:
+if "aivencloud.com" in SQLALCHEMY_DATABASE_URL:
+    # Aiven REQUIRES SSL. Force it here.
     connect_args["ssl"] = {"ca": None}
-    # Clean up the URL for SQLAlchemy
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("?ssl=true", "").replace("&ssl=true", "")
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("?ssl_mode=REQUIRED", "").replace("&ssl_mode=REQUIRED", "")
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("?ssl_mode=required", "").replace("&ssl_mode=required", "")
+    # Clean up any existing SSL params from the URL to avoid conflicts
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.split('?')[0]
 
 from sqlalchemy.pool import NullPool
 
