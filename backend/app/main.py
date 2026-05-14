@@ -58,7 +58,9 @@ app.add_middleware(
         "https://matchhub-portal.vercel.app",
         "https://matchhub-frontend.vercel.app",
         "http://localhost:3000",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://localhost:4174"
     ],
     allow_credentials=True,
     allow_methods=["*"],
