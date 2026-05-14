@@ -18,10 +18,12 @@ const StatusBadge = ({ status }) => {
 };
 
 // Safety filter for old database records with dead placeholder links
-const getSafeUrl = (url, fallback) => {
-  if (!url || url.includes('via.placeholder.com')) return fallback;
-  return url;
-};
+  const getSafeUrl = (url, name = 'User') => {
+    if (!url || url.includes('placeholder.com') || url.includes('via.placeholder')) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+    }
+    return url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL || ''}${url}`;
+  };
 
 const PlayerList = () => {
   const token = localStorage.getItem('token');
@@ -179,10 +181,13 @@ const PlayerList = () => {
                   <div className="flex gap-5">
                     <div className="w-20 h-20 rounded-3xl bg-emerald-950 overflow-hidden border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
                       <img
-                        src={getSafeUrl(selectedPlayer.photo_url, 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name)}
+                        src={getSafeUrl(selectedPlayer.photo_url, selectedPlayer.player_name)}
                         className="w-full h-full object-cover"
                         alt=""
-                        onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + selectedPlayer.player_name}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedPlayer.player_name)}&background=random`;
+                        }}
                       />
                     </div>
                     <div>
@@ -198,12 +203,15 @@ const PlayerList = () => {
                 <div className="space-y-6 mb-8">
                   <div className="premium-glass p-5 bg-emerald-950/20 border-emerald-500/10">
                     <p className="text-[10px] text-emerald-500/60 uppercase font-black tracking-[0.2em] mb-4">Payment Proof</p>
-                    <div className="w-full h-72 bg-emerald-950 rounded-2xl overflow-hidden border border-emerald-900 shadow-inner">
+                    <div className="w-full h-72 bg-emerald-950 rounded-2xl overflow-hidden border border-emerald-900 shadow-inner flex items-center justify-center">
                       <img
-                        src={getSafeUrl(selectedPlayer.payment_image_url, null)}
+                        src={getSafeUrl(selectedPlayer.payment_image_url, 'Payment')}
                         className="w-full h-full object-contain"
                         alt="Payment"
-                        onError={(e) => e.target.style.display = 'none'}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://ui-avatars.com/api/?name=No+Proof&background=334155&color=fff&length=2';
+                        }}
                       />
                     </div>
                   </div>

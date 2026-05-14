@@ -6,7 +6,9 @@ import { Plus, Trophy, Phone, User, Camera, X, Shield, Users } from 'lucide-reac
 import { motion, AnimatePresence } from 'framer-motion';
 
 const getSafeUrl = (url, fallback) => {
-  if (!url || url.includes('via.placeholder.com')) return fallback;
+  if (!url || url.includes('placeholder.com') || url.includes('via.placeholder')) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Team')}&background=random`;
+  }
   return url;
 };
 

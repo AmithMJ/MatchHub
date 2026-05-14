@@ -16,8 +16,15 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
   </div>
 );
 
+const getSafeUrl = (url, name = 'User') => {
+  if (!url || url.includes('placeholder.com') || url.includes('via.placeholder')) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+  }
+  return url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL || ''}${url}`;
+};
+
 const PlayerDashboard = () => {
-  const phone = localStorage.getItem('user_phone'); // Assuming we store this on login
+  const phone = localStorage.getItem('user_phone');
   
   const { data: status, isLoading } = useQuery({
     queryKey: ['player-status', phone],
@@ -46,14 +53,18 @@ const PlayerDashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Player <span className="text-emerald-400">Hub</span></h2>
-          <p className="text-emerald-500/60 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Welcome back, {status.player_name.split(' ')[0]}</p>
+          <p className="text-emerald-500/60 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Welcome back, {status.player_name?.split(' ')[0]}</p>
         </div>
         <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center overflow-hidden">
-           {status.photo_url ? (
-             <img src={status.photo_url} className="w-full h-full object-cover" alt="Profile" onError={(e) => e.target.style.display = 'none'} />
-           ) : (
-             <User className="text-emerald-400" size={28} />
-           )}
+             <img 
+               src={getSafeUrl(status.photo_url, status.player_name)} 
+               className="w-full h-full object-cover" 
+               alt="Profile" 
+               onError={(e) => {
+                 e.target.onerror = null;
+                 e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(status.player_name || 'User')}&background=random`;
+               }} 
+             />
         </div>
       </div>
 

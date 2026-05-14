@@ -13,7 +13,11 @@ const getTournamentConfig = () => {
     upiId: "tournament@upi",
     qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=tournament@upi&pn=MatchHub&am=500"
   };
-  return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+  const config = saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+  if (config.qrCodeUrl && !config.qrCodeUrl.startsWith('http')) {
+    config.qrCodeUrl = `${import.meta.env.VITE_API_URL || ''}${config.qrCodeUrl}`;
+  }
+  return config;
 };
 
 const RegistrationForm = () => {
