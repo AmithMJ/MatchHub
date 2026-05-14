@@ -22,6 +22,13 @@ const StatusBadge = ({ status }) => {
     if (!url || url.includes('placeholder.com') || url.includes('via.placeholder')) {
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
     }
+    
+    // If it's a local upload, always use the current VITE_API_URL
+    if (url.includes('/uploads/')) {
+      const filename = url.split('/uploads/')[1];
+      return `${import.meta.env.VITE_API_URL || ''}/uploads/${filename}`;
+    }
+    
     return url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL || ''}${url}`;
   };
 
