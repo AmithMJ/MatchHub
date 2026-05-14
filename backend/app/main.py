@@ -264,6 +264,12 @@ async def register_player(
             print("DEBUG: Cloudinary upload successful!")
         except Exception as e:
             print(f"!!! CLOUDINARY ERROR !!!: {str(e)}")
+            # On Vercel, we MUST have Cloudinary. Don't fallback silently.
+            if os.getenv("VERCEL"):
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Cloudinary Upload Failed: {str(e)}. Please check your Vercel Environment Variables."
+                )
             is_cloudinary = False
 
     if not is_cloudinary:
