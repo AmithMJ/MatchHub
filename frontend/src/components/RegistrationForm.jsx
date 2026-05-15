@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Camera, Upload, CheckCircle2, ChevronRight, ChevronLeft, ShieldCheck, Trophy, Phone, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from './LoadingSpinner';
 
 // Configuration for Tournament Details (Dynamic)
 const getTournamentConfig = () => {
@@ -95,6 +96,7 @@ const RegistrationForm = () => {
         </div>
       </div>
 
+      {mutation.isPending && <LoadingSpinner fullPage={true} />}
       <form onSubmit={handleSubmit(onSubmit)}>
         <AnimatePresence mode="wait">
           {step === 1 && (

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Plus, Trophy, Phone, User, Camera, X, Shield, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const getSafeUrl = (url, name = 'Team') => {
   if (!url || url.includes('placeholder.com') || url.includes('via.placeholder')) {
@@ -76,7 +77,7 @@ const TeamsList = () => {
     addTeamMutation.mutate(formData);
   };
 
-  if (isLoading) return <div className="p-10 text-center text-slate-500 font-bold">Loading Squads...</div>;
+  if (isLoading) return <LoadingSpinner fullPage={true} />;
 
   return (
     <div className="pb-32 px-5 pt-4 max-w-lg mx-auto">

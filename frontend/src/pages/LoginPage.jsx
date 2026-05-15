@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Phone, Lock, LogIn, UserPlus, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -47,6 +48,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-6">
+      {(loginMutation.isPending || registerMutation.isPending) && <LoadingSpinner fullPage={true} />}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

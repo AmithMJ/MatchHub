@@ -161,7 +161,7 @@ const Header = ({ title, subtitle }) => {
               to={item.path}
               className={({ isActive }) =>
                 `flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all duration-300 relative ${
-                  isActive ? 'text-white' : 'text-emerald-900/60 hover:text-emerald-400'
+                  isActive ? 'text-white' : 'text-emerald-500/40 hover:text-emerald-400'
                 }`
               }
             >

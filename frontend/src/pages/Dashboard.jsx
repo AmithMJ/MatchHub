@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Users, Trophy, DollarSign, Clock, TrendingUp, Calendar, ShieldCheck, MapPin, ChevronRight, AlertCircle, Settings, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const StatCard = ({ title, value, icon: Icon, gradient, delay }) => (
   <motion.div
@@ -40,11 +41,7 @@ const Dashboard = () => {
     refetchInterval: 5000,
   });
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.4)]"></div>
-    </div>
-  );
+  if (isLoading) return <LoadingSpinner fullPage={true} />;
 
   if (!stats) return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">

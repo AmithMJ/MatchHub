@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Search, Filter, Check, X, Eye, Phone, ChevronRight, User, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -77,7 +78,7 @@ const PlayerList = () => {
 
   const tournaments = ['All', ...new Set(players?.map(p => p.tournament_name).filter(Boolean) || [])];
 
-  if (isLoading) return <div className="p-10 text-center text-slate-500">Loading registrations...</div>;
+  if (isLoading) return <LoadingSpinner fullPage={true} />;
 
   return (
     <div className="pb-32 px-5 pt-4 max-w-lg mx-auto">
