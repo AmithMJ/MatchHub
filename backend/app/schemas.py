@@ -8,6 +8,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    admin_key: Optional[str] = None
 
 class UserLogin(BaseModel):
     phone: str

@@ -115,7 +115,18 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
             raise HTTPException(status_code=400, detail="Phone already registered")
         
         hashed_pwd = auth.get_password_hash(user.password)
-        new_user = models.User(phone=user.phone, role=user.role, password_hash=hashed_pwd)
+        
+        # --- ROLE SECURITY ---
+        final_role = "player"
+        if user.role == "organizer":
+            admin_secret = os.getenv("ADMIN_SECRET_KEY", "MatchHubAdmin2026")
+            if user.admin_key == admin_secret:
+                final_role = "organizer"
+            else:
+                # Silently force to player or raise error
+                raise HTTPException(status_code=403, detail="Invalid Admin Key. You cannot register as an organizer.")
+        
+        new_user = models.User(phone=user.phone, role=final_role, password_hash=hashed_pwd)
         
         db.add(new_user)
         db.commit()

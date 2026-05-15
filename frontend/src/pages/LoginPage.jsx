@@ -100,6 +100,22 @@ const LoginPage = () => {
                 placeholder="Password"
               />
             </div>
+
+            {!isLogin && (
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="premium-glass p-1 focus-within:ring-2 ring-amber-500/50 transition-all rounded-2xl flex items-center border-amber-500/10"
+              >
+                <ShieldCheck className="ml-4 text-amber-800" size={18} />
+                <input
+                  type="password"
+                  {...register('admin_key', { required: !isLogin })}
+                  className="w-full bg-transparent border-none px-4 py-4 focus:outline-none font-bold placeholder:text-amber-100/30 text-white"
+                  placeholder="Master Admin Key"
+                />
+              </motion.div>
+            )}
           </div>
 
           <motion.button
