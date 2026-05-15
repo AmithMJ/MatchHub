@@ -29,9 +29,11 @@ const StatCard = ({ title, value, icon: Icon, gradient, delay }) => (
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview'); // overview, standings, matches
   const [showSettings, setShowSettings] = useState(false);
   const [showTournamentModal, setShowTournamentModal] = useState(false);
   const [settingsPreview, setSettingsPreview] = useState(null);
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
@@ -39,6 +41,23 @@ const Dashboard = () => {
       return response.data;
     },
     refetchInterval: 5000,
+  });
+
+  const { data: standings } = useQuery({
+    queryKey: ['standings', stats?.upcoming_tournament?.id],
+    queryFn: async () => {
+      const response = await api.get(`/standings/${stats.upcoming_tournament.id}`);
+      return response.data;
+    },
+    enabled: !!stats?.upcoming_tournament?.id,
+  });
+
+  const { data: matches } = useQuery({
+    queryKey: ['matches'],
+    queryFn: async () => {
+      const response = await api.get('/matches');
+      return response.data;
+    },
   });
 
   if (isLoading) return <LoadingSpinner fullPage={true} />;
@@ -56,8 +75,36 @@ const Dashboard = () => {
 
   return (
     <div className="pb-32 px-5 pt-4 max-w-2xl mx-auto">
+      {/* Tab Navigation */}
+      <div className="flex gap-2 mb-8 bg-emerald-950/20 p-1.5 rounded-2xl border border-white/5">
+        {['overview', 'standings', 'schedule'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${
+              activeTab === tab ? 'text-white' : 'text-emerald-500/40 hover:text-emerald-400'
+            }`}
+          >
+            {tab}
+            {activeTab === tab && (
+              <motion.div
+                layoutId="dashboard-tab"
+                className="absolute inset-0 bg-emerald-500 rounded-xl -z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+              />
+            )}
+          </button>
+        ))}
+      </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 mb-10">
+      <AnimatePresence mode="wait">
+        {activeTab === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 mb-10">
         <StatCard
           title="Total Admins"
           value={stats?.total_users || 0}
@@ -186,7 +233,122 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="space-y-6">
+          </motion.div>
+        )}
+
+        {activeTab === 'standings' && (
+          <motion.div
+            key="standings"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div className="premium-glass p-6 border-emerald-500/10">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                  <Trophy className="text-amber-500" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white leading-none">Points Table</h3>
+                  <p className="text-[10px] text-emerald-500/60 font-black uppercase tracking-widest mt-1">Live Standings</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="py-4 text-[10px] font-black uppercase text-emerald-500/40 tracking-widest px-2">Team</th>
+                      <th className="py-4 text-[10px] font-black uppercase text-emerald-500/40 tracking-widest text-center">P</th>
+                      <th className="py-4 text-[10px] font-black uppercase text-emerald-500/40 tracking-widest text-center">W</th>
+                      <th className="py-4 text-[10px] font-black uppercase text-emerald-500/40 tracking-widest text-center">L</th>
+                      <th className="py-4 text-[10px] font-black uppercase text-emerald-400 tracking-widest text-center bg-emerald-500/5 rounded-t-lg">Pts</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {standings?.map((team, idx) => (
+                      <tr key={team.team_id} className="group hover:bg-white/[0.02] transition-colors">
+                        <td className="py-4 px-2">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-emerald-500/40 w-4">{idx + 1}</span>
+                            <span className="text-sm font-bold text-white truncate max-w-[120px]">{team.team_name}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 text-center text-xs font-bold text-slate-400">{team.played}</td>
+                        <td className="py-4 text-center text-xs font-bold text-emerald-400">{team.won}</td>
+                        <td className="py-4 text-center text-xs font-bold text-rose-400">{team.lost}</td>
+                        <td className="py-4 text-center text-sm font-black text-white bg-emerald-500/5">{team.points}</td>
+                      </tr>
+                    ))}
+                    {(!standings || standings.length === 0) && (
+                      <tr>
+                        <td colSpan="5" className="py-20 text-center text-[10px] font-black uppercase text-slate-500 tracking-widest italic">No matches recorded yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'schedule' && (
+          <motion.div
+            key="schedule"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-4"
+          >
+            {matches?.map((match) => (
+              <div key={match.id} className="premium-glass p-5 border-white/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Calendar size={40} className="text-emerald-500" />
+                </div>
+                
+                <div className="flex justify-between items-center mb-4">
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                    match.status === 'Completed' ? 'bg-slate-500/20 text-slate-400' : 
+                    match.status === 'Live' ? 'bg-rose-500/20 text-rose-500 animate-pulse' : 'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    {match.status}
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-500">{new Date(match.match_date).toLocaleDateString()} · {match.venue}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 py-2">
+                  <div className="flex-1 text-center">
+                    <p className="text-sm font-black text-white truncate mb-1">{match.team1_name}</p>
+                    <p className="text-[9px] text-emerald-500/40 uppercase font-black tracking-widest">Squad A</p>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black text-emerald-500/40 border border-white/5">VS</div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <p className="text-sm font-black text-white truncate mb-1">{match.team2_name}</p>
+                    <p className="text-[9px] text-emerald-500/40 uppercase font-black tracking-widest">Squad B</p>
+                  </div>
+                </div>
+
+                {match.result && (
+                  <div className="mt-4 pt-4 border-t border-white/5 text-center">
+                    <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">{match.result}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+            {(!matches || matches.length === 0) && (
+              <div className="premium-glass py-20 text-center border-dashed border-white/10">
+                <Calendar className="mx-auto text-white/5 mb-4" size={48} />
+                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">No matches scheduled</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="mt-12 space-y-6">
         <h3 className="text-xl font-black text-white flex items-center justify-between uppercase tracking-tighter">
           Quick Actions
           <div className="p-1.5 bg-emerald-500/10 rounded-lg">

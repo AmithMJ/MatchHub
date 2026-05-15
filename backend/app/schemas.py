@@ -86,3 +86,33 @@ class DashboardStats(BaseModel):
     registrations_today: int
     upcoming_tournament: Optional[Tournament]
     recent_registrations: list
+
+class MatchBase(BaseModel):
+    tournament_id: int
+    team1_id: int
+    team2_id: int
+    match_date: datetime
+    venue: str
+    status: str = "Scheduled"
+    result: Optional[str] = None
+    winner_id: Optional[int] = None
+
+class MatchCreate(MatchBase):
+    pass
+
+class Match(MatchBase):
+    id: int
+    team1_name: Optional[str] = None
+    team2_name: Optional[str] = None
+    winner_name: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class StandingsEntry(BaseModel):
+    team_id: int
+    team_name: str
+    played: int
+    won: int
+    lost: int
+    nrr: float
+    points: int

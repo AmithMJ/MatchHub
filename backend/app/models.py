@@ -47,3 +47,20 @@ class Player(Base):
 
     team = relationship("Team", back_populates="players")
     tournament = relationship("Tournament")
+
+class Match(Base):
+    __tablename__ = "matches"
+    id = Column(Integer, primary_key=True, index=True)
+    tournament_id = Column(Integer, ForeignKey("tournaments.id"))
+    team1_id = Column(Integer, ForeignKey("teams.id"))
+    team2_id = Column(Integer, ForeignKey("teams.id"))
+    match_date = Column(DateTime)
+    venue = Column(String(200))
+    status = Column(String(20), default="Scheduled")  # Scheduled, Live, Completed
+    result = Column(String(255), nullable=True)
+    winner_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+
+    team1 = relationship("Team", foreign_keys=[team1_id])
+    team2 = relationship("Team", foreign_keys=[team2_id])
+    winner = relationship("Team", foreign_keys=[winner_id])
+    tournament = relationship("Tournament")

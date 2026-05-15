@@ -429,6 +429,72 @@ def get_dashboard_stats(db: Session = Depends(database.get_db), current_user=Dep
         "recent_registrations": recent_data
     }
 
+# --- MATCHES & STANDINGS ---
+@app.post("/matches", response_model=schemas.Match)
+def create_match(match: schemas.MatchCreate, db: Session = Depends(database.get_db), current_user=Depends(auth.get_admin_user)):
+    db_match = models.Match(**match.dict())
+    db.add(db_match)
+    db.commit()
+    db.refresh(db_match)
+    return db_match
+
+@app.get("/matches", response_model=List[schemas.Match])
+def list_matches(db: Session = Depends(database.get_db)):
+    matches = db.query(models.Match).all()
+    result = []
+    for m in matches:
+        t1 = db.query(models.Team).filter(models.Team.id == m.team1_id).first()
+        t2 = db.query(models.Team).filter(models.Team.id == m.team2_id).first()
+        winner = db.query(models.Team).filter(models.Team.id == m.winner_id).first() if m.winner_id else None
+        
+        m_data = {
+            "id": m.id,
+            "tournament_id": m.tournament_id,
+            "team1_id": m.team1_id,
+            "team2_id": m.team2_id,
+            "match_date": m.match_date,
+            "venue": m.venue,
+            "status": m.status,
+            "result": m.result,
+            "winner_id": m.winner_id,
+            "team1_name": t1.team_name if t1 else "TBD",
+            "team2_name": t2.team_name if t2 else "TBD",
+            "winner_name": winner.team_name if winner else None
+        }
+        result.append(m_data)
+    return result
+
+@app.get("/standings/{tournament_id}", response_model=List[schemas.StandingsEntry])
+def get_standings(tournament_id: int, db: Session = Depends(database.get_db)):
+    teams = db.query(models.Team).all()
+    standings = []
+    
+    for team in teams:
+        # Count matches played by this team in this tournament
+        matches = db.query(models.Match).filter(
+            (models.Match.tournament_id == tournament_id) & 
+            ((models.Match.team1_id == team.id) | (models.Match.team2_id == team.id)) &
+            (models.Match.status == "Completed")
+        ).all()
+        
+        played = len(matches)
+        won = len([m for m in matches if m.winner_id == team.id])
+        lost = played - won
+        points = won * 2
+        
+        standings.append({
+            "team_id": team.id,
+            "team_name": team.team_name,
+            "played": played,
+            "won": won,
+            "lost": lost,
+            "nrr": 0.0,
+            "points": points
+        })
+    
+    # Sort by points (Primary) then wins (Secondary)
+    return sorted(standings, key=lambda x: (x['points'], x['won']), reverse=True)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
