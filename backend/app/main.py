@@ -205,7 +205,6 @@ def list_teams(request: Request, db: Session = Depends(database.get_db)):
     base_url = str(request.base_url).rstrip('/')
     for team in teams:
         if team.logo and not team.logo.startswith('http'):
-            # Convert internal path/filename to full URL
             filename = os.path.basename(team.logo)
             team.logo = f"{base_url}/uploads/{filename}"
     return teams
@@ -321,12 +320,16 @@ def list_players(request: Request, db: Session = Depends(database.get_db), curre
         team = db.query(models.Team).filter(models.Team.id == p.team_id).first()
         tournament = db.query(models.Tournament).filter(models.Tournament.id == p.tournament_id).first() if p.tournament_id else None
         
-        # Clean up filenames and construct full web URLs
-        photo_fn = os.path.basename(p.photo_url) if p.photo_url else None
-        pay_fn = os.path.basename(p.payment_image_url) if p.payment_image_url else None
-        
-        photo_url = f"{base_url}/uploads/{photo_fn}" if photo_fn else None
-        payment_url = f"{base_url}/uploads/{pay_fn}" if pay_fn else None
+        # Construct full web URLs (Only for local files)
+        photo_url = p.photo_url
+        if photo_url and not photo_url.startswith('http'):
+            photo_fn = os.path.basename(photo_url)
+            photo_url = f"{base_url}/uploads/{photo_fn}"
+            
+        payment_url = p.payment_image_url
+        if payment_url and not payment_url.startswith('http'):
+            pay_fn = os.path.basename(payment_url)
+            payment_url = f"{base_url}/uploads/{pay_fn}"
 
         result.append({
             "id": p.id,
