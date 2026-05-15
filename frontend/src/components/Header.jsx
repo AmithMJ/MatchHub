@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, User, LayoutDashboard, Target, Trophy, Users, LogOut, Settings, ShieldCheck, Mail } from 'lucide-react';
+import { Bell, User, LayoutDashboard, Target, Trophy, Users, LogOut, Settings, ShieldCheck, Mail, MessageSquare } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import api from '../utils/api';
+import TournamentSettingsModal from './TournamentSettingsModal';
+import LoadingSpinner from './LoadingSpinner';
 
 const Header = ({ title, subtitle }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Real Notification Logic: Fetch pending players
+  const { data: players, isLoading: loadingNotifs } = useQuery({
+    queryKey: ['players-notifs'],
+    queryFn: async () => {
+      const response = await api.get('/players');
+      return response.data.filter(p => p.payment_status === 'Pending').slice(0, 5);
+    },
+    enabled: !!token,
+    refetchInterval: 10000, // Check every 10s
+  });
   
   const navItems = [
     ...(token ? [{ icon: LayoutDashboard, label: 'Stats', path: '/' }] : []),
@@ -24,13 +40,14 @@ const Header = ({ title, subtitle }) => {
     navigate('/login');
   };
 
-  const notifications = [
-    { id: 1, title: 'New Registration', time: '2m ago', type: 'player' },
-    { id: 2, title: 'Payment Verified', time: '15m ago', type: 'payment' },
-    { id: 3, title: 'Squad Updated', time: '1h ago', type: 'team' },
-  ];
+  const handleMessages = () => {
+    setShowUserMenu(false);
+    alert('Tournament Support: Open for verified organizers only. Linking to support center...');
+    // Real link could be: window.open('https://wa.me/yournumber', '_blank');
+  };
 
   return (
+    <>
     <header className="sticky top-0 z-50 px-3 py-3">
       <div className="premium-glass px-4 py-3 border-emerald-500/10 flex flex-col gap-4 relative">
         {/* Top Section: Brand and Profile */}
@@ -67,7 +84,9 @@ const Header = ({ title, subtitle }) => {
                     className={`p-2 rounded-xl border transition-all ${showNotifications ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-white/5 text-emerald-400 border-white/5'}`}
                   >
                     <Bell size={18} />
-                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-900" />
+                    {players?.length > 0 && (
+                      <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-900 animate-pulse" />
+                    )}
                   </motion.button>
 
                   <AnimatePresence>
@@ -78,19 +97,37 @@ const Header = ({ title, subtitle }) => {
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         className="absolute right-0 mt-3 w-64 premium-glass p-4 border-emerald-500/20 shadow-2xl z-[60]"
                       >
-                        <h4 className="text-[10px] font-black uppercase text-emerald-400 mb-4 tracking-widest">Recent Activity</h4>
+                        <h4 className="text-[10px] font-black uppercase text-emerald-400 mb-4 tracking-widest">Pending Approvals</h4>
                         <div className="space-y-3">
-                          {notifications.map(n => (
-                            <div key={n.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20">
-                                {n.type === 'player' ? <Users size={14} /> : n.type === 'payment' ? <ShieldCheck size={14} /> : <Trophy size={14} />}
+                          {loadingNotifs ? (
+                            <div className="py-10 flex justify-center"><LoadingSpinner /></div>
+                          ) : players?.length > 0 ? (
+                            players.map(p => (
+                              <div 
+                                key={p.id} 
+                                onClick={() => { setShowNotifications(false); navigate('/players'); }}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20">
+                                  <Users size={14} />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-xs font-bold text-white leading-none mb-1">{p.player_name}</p>
+                                  <p className="text-[9px] text-emerald-500/40 uppercase font-black tracking-widest">{p.team_name}</p>
+                                </div>
                               </div>
-                              <div className="flex-1">
-                                <p className="text-xs font-bold text-white">{n.title}</p>
-                                <p className="text-[9px] text-emerald-500/40">{n.time}</p>
-                              </div>
-                            </div>
-                          ))}
+                            ))
+                          ) : (
+                            <p className="text-[10px] text-center text-slate-500 py-4 font-bold italic">All entries verified!</p>
+                          )}
+                          {players?.length > 0 && (
+                            <button 
+                              onClick={() => { setShowNotifications(false); navigate('/players'); }}
+                              className="w-full text-center py-2 text-[9px] font-black uppercase text-emerald-500/60 hover:text-emerald-400 border-t border-white/5 mt-2 pt-3"
+                            >
+                              View All Records
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -124,10 +161,16 @@ const Header = ({ title, subtitle }) => {
                           <p className="text-xs font-black text-white">Organizer Pro</p>
                           <p className="text-[9px] text-emerald-500/60 uppercase">Super Admin</p>
                         </div>
-                        <button className="w-full flex items-center gap-3 p-2.5 rounded-lg text-emerald-100/60 hover:text-white hover:bg-emerald-500/10 transition-all text-xs font-bold">
+                        <button 
+                          onClick={() => { setShowSettings(true); setShowUserMenu(false); }}
+                          className="w-full flex items-center gap-3 p-2.5 rounded-lg text-emerald-100/60 hover:text-white hover:bg-emerald-500/10 transition-all text-xs font-bold"
+                        >
                           <Settings size={14} /> Settings
                         </button>
-                        <button className="w-full flex items-center gap-3 p-2.5 rounded-lg text-emerald-100/60 hover:text-white hover:bg-emerald-500/10 transition-all text-xs font-bold">
+                        <button 
+                          onClick={handleMessages}
+                          className="w-full flex items-center gap-3 p-2.5 rounded-lg text-emerald-100/60 hover:text-white hover:bg-emerald-500/10 transition-all text-xs font-bold"
+                        >
                           <Mail size={14} /> Messages
                         </button>
                         <button 
@@ -185,6 +228,8 @@ const Header = ({ title, subtitle }) => {
         </nav>
       </div>
     </header>
+    <TournamentSettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+    </>
   );
 };
 
