@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
-import { Phone, Lock, LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { Phone, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -49,13 +49,13 @@ const LoginPage = () => {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-6">
       {(loginMutation.isPending || registerMutation.isPending) && <LoadingSpinner fullPage={true} />}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md premium-glass p-8 rounded-[40px] relative overflow-hidden"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500" />
-        
+
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             {isLogin ? <LogIn className="text-emerald-400" size={32} /> : <UserPlus className="text-amber-400" size={32} />}
@@ -71,7 +71,7 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <AnimatePresence mode="wait">
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl flex items-center gap-3 text-rose-500 text-xs font-bold"
@@ -102,7 +102,7 @@ const LoginPage = () => {
             </div>
 
             {!isLogin && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="premium-glass p-1 focus-within:ring-2 ring-amber-500/50 transition-all rounded-2xl flex items-center border-amber-500/10"
@@ -129,7 +129,7 @@ const LoginPage = () => {
         </form>
 
         <div className="mt-8 text-center">
-          <button 
+          <button
             onClick={() => setIsLogin(!isLogin)}
             className="text-slate-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
           >
