@@ -125,67 +125,53 @@ const TeamsList = () => {
   if (isLoading) return <LoadingSpinner fullPage={true} />;
 
   return (
-    <div className="pb-32 px-5 pt-4 max-w-lg mx-auto relative">
-      {/* Mesh Overlay */}
-      <div className="mesh-overlay" />
-
-      <div className="flex justify-between items-end mb-12">
-        <div className="space-y-2">
-          <h2 className="text-4xl font-black tracking-tighter uppercase text-elite">Elite Squads</h2>
-          <p className="subtext-elite">Pro-Series Verified Franchises</p>
+    <div className="pb-32 px-5 pt-4 max-w-lg mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-black text-white tracking-tighter uppercase">Elite Squads</h2>
+          <p className="text-emerald-500/60 text-[10px] font-black uppercase tracking-[0.2em]">Verified Tournament Teams</p>
         </div>
         {token && (
           <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowAddModal(true)}
-            className="w-16 h-16 rounded-[22px] bg-emerald-500 shadow-[0_15px_30px_rgba(16,185,129,0.4)] flex items-center justify-center p-0 text-white border border-white/20 group"
+            className="w-14 h-14 rounded-2xl bg-emerald-500 shadow-[0_8px_20px_rgba(16,185,129,0.3)] flex items-center justify-center p-0 text-white"
           >
-            <Plus size={32} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+            <Plus size={28} strokeWidth={3} />
           </motion.button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-5">
         {teams?.map((team, index) => (
           <motion.div
             key={team.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="premium-glass p-6 flex flex-col items-center text-center relative group border-white/5 hover:border-emerald-500/30 transition-all duration-700 shadow-2xl overflow-hidden"
+            className="premium-glass p-5 flex flex-col items-center text-center relative group border-emerald-500/5 hover:border-emerald-500/20 transition-all duration-500"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-              <Shield size={100} className="text-emerald-400 rotate-12" />
+            <div className="absolute top-2 right-2 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+              <Shield size={60} className="text-emerald-400" />
             </div>
-            
-            <div className="relative z-10 mb-6">
-              <div className="w-24 h-24 rounded-[32px] bg-slate-900 border-2 border-white/10 overflow-hidden shadow-2xl group-hover:border-emerald-500 group-hover:scale-105 transition-all duration-700">
-                <img 
-                  src={getSafeUrl(team.logo, team.team_name)} 
-                  alt={team.team_name} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(team.team_name)}&background=random`;
-                  }}
-                />
-              </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center border-2 border-slate-950 shadow-xl group-hover:rotate-12 transition-transform">
-                <Trophy size={14} className="text-white" />
-              </div>
+            <div className="w-24 h-24 rounded-[32px] bg-emerald-950 border-2 border-emerald-500/10 overflow-hidden mb-5 shadow-2xl group-hover:border-emerald-400 transition-all duration-500 relative z-10">
+              <img 
+                src={getSafeUrl(team.logo, 'https://ui-avatars.com/api/?name=' + team.team_name)} 
+                alt={team.team_name} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + team.team_name}
+              />
             </div>
-
-            <h3 className="font-black text-white leading-tight mb-4 text-xl tracking-tighter text-elite group-hover:text-emerald-400 transition-colors relative z-10">{team.team_name}</h3>
-            
-            <div className="space-y-3 w-full relative z-10">
-              <div className="px-4 py-2 bg-white/[0.03] rounded-xl flex items-center justify-center gap-3 border border-white/5 group-hover:bg-emerald-500/5 transition-colors">
-                <User size={14} className="text-emerald-400" /> 
-                <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest truncate">{team.captain}</span>
+            <h3 className="font-black text-white leading-tight mb-3 text-lg tracking-tight relative z-10">{team.team_name}</h3>
+            <div className="space-y-2 relative z-10">
+              <div className="px-3 py-1 bg-emerald-500/10 rounded-lg flex items-center justify-center gap-2 border border-emerald-500/10">
+                <User size={12} className="text-emerald-400" /> 
+                <span className="text-[9px] text-emerald-200 font-bold uppercase tracking-widest">{team.captain}</span>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[9px] text-emerald-500/60 font-black uppercase tracking-[0.2em]">Full Squad Verified</span>
+              <div className="flex items-center justify-center gap-1.5 opacity-60">
+                <Users size={12} className="text-emerald-500" />
+                <span className="text-[10px] text-white font-black uppercase tracking-widest">11 Squad</span>
               </div>
             </div>
           </motion.div>

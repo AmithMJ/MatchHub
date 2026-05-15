@@ -11,21 +11,18 @@ const StatCard = ({ title, value, icon: Icon, gradient, delay }) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5 }}
-    className="premium-glass p-6 relative overflow-hidden group border-white/5"
+    className="premium-glass p-5 relative overflow-hidden group"
   >
-    <div className={`absolute -right-4 -top-4 w-24 h-24 opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700 rounded-full ${gradient}`} />
-    <div className="flex items-start justify-between mb-6">
-      <div className={`p-3.5 rounded-2xl ${gradient} shadow-2xl border border-white/10 group-hover:rotate-6 transition-transform duration-500`}>
-        <Icon className="text-white" size={20} />
+    <div className={`absolute -right-2 -top-2 w-16 h-16 opacity-10 group-hover:scale-110 transition-transform duration-500 rounded-full bg-white`} />
+    <div className="flex items-start justify-between mb-4">
+      <div className={`p-3 rounded-2xl ${gradient} shadow-lg`}>
+        <Icon className="text-white" size={22} />
       </div>
-      <div className="flex flex-col items-end">
-        <TrendingUp size={14} className="text-emerald-400 opacity-40 mb-1" />
-        <span className="text-[8px] font-black text-emerald-500/40 uppercase tracking-widest">+12%</span>
-      </div>
+      <TrendingUp size={16} className="text-emerald-400 opacity-50" />
     </div>
     <div>
-      <p className="subtext-elite mb-2">{title}</p>
-      <h3 className="text-3xl font-black text-white tracking-tighter text-elite">{value}</h3>
+      <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{title}</p>
+      <h3 className="text-3xl font-extrabold text-white tracking-tight">{value}</h3>
     </div>
   </motion.div>
 );
@@ -43,7 +40,7 @@ const Dashboard = () => {
       const response = await api.get('/dashboard/stats');
       return response.data;
     },
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   const { data: standings } = useQuery({
@@ -67,36 +64,32 @@ const Dashboard = () => {
 
   if (!stats) return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-      <div className="p-8 bg-rose-500/5 rounded-[40px] mb-8 border border-rose-500/10 shadow-2xl">
-        <Users className="text-rose-500" size={56} />
+      <div className="p-6 bg-rose-500/10 rounded-full mb-6 border border-rose-500/20">
+        <Users className="text-rose-500" size={48} />
       </div>
-      <h2 className="text-3xl font-black mb-4 uppercase tracking-tighter text-elite">Access Restricted</h2>
-      <p className="text-slate-500 font-bold max-w-xs mx-auto">This dashboard is reserved for verified Tournament Organizers only.</p>
-      <button onClick={() => window.location.href = '/login'} className="btn-primary mt-10 !px-12">Return to Base</button>
+      <h2 className="text-2xl font-black mb-2 uppercase tracking-tight">Access Denied</h2>
+      <p className="text-emerald-200/60 font-medium">Please make sure you are logged in as an Organizer.</p>
+      <button onClick={() => window.location.href = '/login'} className="btn-primary mt-8">Back to Login</button>
     </div>
   );
 
   return (
     <div className="pb-32 px-5 pt-4 max-w-2xl mx-auto">
-      {/* Mesh Background Overlay */}
-      <div className="mesh-overlay" />
-
       {/* Tab Navigation */}
-      <div className="flex gap-2 mb-10 bg-white/[0.03] p-1.5 rounded-3xl border border-white/5">
+      <div className="flex gap-2 mb-8 bg-emerald-950/20 p-1.5 rounded-2xl border border-white/5">
         {['overview', 'standings', 'schedule'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 relative ${
-              activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-emerald-400'
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${
+              activeTab === tab ? 'text-white' : 'text-emerald-500/40 hover:text-emerald-400'
             }`}
           >
             {tab}
             {activeTab === tab && (
               <motion.div
                 layoutId="dashboard-tab"
-                className="absolute inset-0 bg-emerald-500 rounded-2xl -z-10 shadow-[0_10px_30px_rgba(16,185,129,0.5)]"
-                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                className="absolute inset-0 bg-emerald-500 rounded-xl -z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               />
             )}
           </button>
@@ -107,149 +100,139 @@ const Dashboard = () => {
         {activeTab === 'overview' && (
           <motion.div
             key="overview"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
           >
-            <div className="grid grid-cols-2 gap-5 mb-10">
-              <StatCard
-                title="Total Admins"
-                value={stats?.total_users || 0}
-                icon={ShieldCheck}
-                gradient="bg-gradient-to-br from-indigo-500 to-purple-600"
-                delay={0.05}
-              />
-              <StatCard
-                title="Total Players"
-                value={stats?.total_players || 0}
-                icon={Users}
-                gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
-                delay={0.1}
-              />
-              <StatCard
-                title="Active Teams"
-                value={stats?.total_teams || 0}
-                icon={Trophy}
-                gradient="bg-gradient-to-br from-amber-400 to-orange-500"
-                delay={0.2}
-              />
-              <StatCard
-                title="Revenue"
-                value={`₹${((stats?.approved_players || 0) * (stats?.upcoming_tournament?.entry_fee || 500)).toLocaleString()}`}
-                icon={DollarSign}
-                gradient="bg-gradient-to-br from-emerald-600 to-emerald-900"
-                delay={0.3}
-              />
-            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 mb-10">
+        <StatCard
+          title="Total Admins"
+          value={stats?.total_users || 0}
+          icon={ShieldCheck}
+          gradient="bg-gradient-to-br from-indigo-500 to-purple-700"
+          delay={0.05}
+        />
+        <StatCard
+          title="Total Players"
+          value={stats?.total_players || 0}
+          icon={Users}
+          gradient="bg-gradient-to-br from-emerald-500 to-green-700"
+          delay={0.1}
+        />
+        <StatCard
+          title="Active Teams"
+          value={stats?.total_teams || 0}
+          icon={Trophy}
+          gradient="bg-gradient-to-br from-emerald-400 to-teal-600"
+          delay={0.2}
+        />
+        <StatCard
+          title="Pending Pay"
+          value={stats?.pending_payments || 0}
+          icon={Clock}
+          gradient="bg-gradient-to-br from-amber-400 to-orange-600"
+          delay={0.3}
+        />
+        <StatCard
+          title="Revenue"
+          value={`₹${(stats?.approved_players || 0) * (stats?.upcoming_tournament?.entry_fee || 500)}`}
+          icon={DollarSign}
+          gradient="bg-gradient-to-br from-emerald-600 to-emerald-900"
+          delay={0.4}
+        />
+      </div>
 
-            {stats?.upcoming_tournament && (
+      {stats?.upcoming_tournament && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="premium-glass p-6 mb-10 border-l-4 border-emerald-500 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        >
+          <div className="absolute -right-8 -bottom-8 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700">
+            <Trophy size={180} />
+          </div>
+          <div className="flex justify-between items-start mb-6 relative z-10">
+            <div>
+              <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block border border-emerald-500/20">
+                Live Tournament
+              </span>
+              <h2 className="text-3xl font-black text-white mb-2 leading-none">{stats.upcoming_tournament.name}</h2>
+            </div>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-2 px-3 rounded-xl text-center min-w-[70px]">
+              <p className="text-[10px] text-emerald-500/60 uppercase font-black">Status</p>
+              <p className="text-xs font-black text-emerald-400 uppercase tracking-tighter">{stats.upcoming_tournament.status}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm mb-8 relative z-10">
+            <div className="flex items-center gap-3 text-emerald-100/70 font-medium">
+              <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/10"><Calendar size={18} className="text-emerald-400" /></div>
+              <span>{new Date(stats.upcoming_tournament.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+            <div className="flex items-center gap-3 text-emerald-100/70 font-medium">
+              <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/10"><MapPin size={18} className="text-emerald-400" /></div>
+              <span>{stats.upcoming_tournament.location}</span>
+            </div>
+          </div>
+
+          <div className="relative z-10">
+            <div className="w-full bg-emerald-950 h-3 rounded-full overflow-hidden mb-3 border border-emerald-900">
               <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="premium-glass p-8 mb-12 border-white/10 relative overflow-hidden group"
-              >
-                <div className="absolute -right-12 -bottom-12 opacity-[0.05] group-hover:rotate-12 transition-transform duration-1000">
-                  <Trophy size={240} className="text-emerald-400" />
-                </div>
-                
-                <div className="flex justify-between items-start mb-8 relative z-10">
-                  <div className="space-y-2">
-                    <span className="badge badge-approved mb-2 inline-block">Live Tournament</span>
-                    <h2 className="text-4xl font-black text-white tracking-tighter text-elite">
-                      {stats.upcoming_tournament.name}
-                    </h2>
-                    <p className="subtext-elite !text-emerald-500/40">Official Series 2026</p>
-                  </div>
-                  <div className="premium-glass-light p-3 px-5 border-white/5 text-center">
-                    <p className="subtext-elite !text-[8px] mb-1">Current Status</p>
-                    <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em] animate-pulse">
-                      {stats.upcoming_tournament.status}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6 mb-10 relative z-10">
-                  <div className="flex items-center gap-4 group/item">
-                    <div className="p-3 bg-white/5 rounded-2xl border border-white/10 group-hover/item:border-emerald-500/50 transition-colors">
-                      <Calendar size={20} className="text-emerald-400" />
-                    </div>
-                    <div>
-                      <p className="subtext-elite !text-[8px]">Match Date</p>
-                      <p className="text-xs font-black text-white">{new Date(stats.upcoming_tournament.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 group/item">
-                    <div className="p-3 bg-white/5 rounded-2xl border border-white/10 group-hover/item:border-emerald-500/50 transition-colors">
-                      <MapPin size={20} className="text-emerald-400" />
-                    </div>
-                    <div>
-                      <p className="subtext-elite !text-[8px]">Venue</p>
-                      <p className="text-xs font-black text-white">{stats.upcoming_tournament.location}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative z-10 p-1">
-                  <div className="w-full bg-slate-900/50 h-3 rounded-full overflow-hidden mb-4 border border-white/5">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(stats.total_teams / stats.upcoming_tournament.max_teams) * 100}%` }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-                    />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="subtext-elite">Team Registration Progress</p>
-                    <div className="flex items-center gap-2">
-                       <span className="text-xs font-black text-white">{stats.total_teams}</span>
-                       <span className="text-[10px] font-bold text-slate-500">/ {stats.upcoming_tournament.max_teams}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            <div className="space-y-8 mb-12">
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter text-elite">Live Feed</h3>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                   <span className="text-[9px] text-emerald-500 font-black uppercase tracking-[0.2em]">Live Stream</span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {stats?.recent_registrations?.map((reg, idx) => (
-                  <motion.div 
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="premium-glass p-5 border-white/5 flex items-center justify-between group hover:border-emerald-500/20 transition-all hover:scale-[1.01]"
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg border border-white/5 shadow-xl transition-transform group-hover:rotate-6 ${
-                        reg.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                      }`}>
-                        {reg.player_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-white leading-none mb-1 group-hover:text-emerald-400 transition-colors">{reg.player_name}</p>
-                        <p className="subtext-elite !text-[8px]">{reg.team_name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${
-                        reg.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500'
-                      }`}>{reg.status}</p>
-                      <div className="flex items-center gap-2 justify-end">
-                         <Clock size={10} className="text-slate-600" />
-                         <p className="text-[9px] text-slate-500 font-bold">{new Date(reg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                initial={{ width: 0 }}
+                animate={{ width: `${(stats.total_teams / stats.upcoming_tournament.max_teams) * 100}%` }}
+                className="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+              />
             </div>
+            <div className="flex justify-between text-[11px] font-black text-emerald-500/60 uppercase tracking-[0.2em]">
+              <span>Registration Progress</span>
+              <span className="text-white bg-emerald-500 px-2 rounded-md py-0.5">{stats.total_teams} / {stats.upcoming_tournament.max_teams}</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <div className="space-y-6 mb-10">
+        <h3 className="text-xl font-black text-white flex items-center justify-between uppercase tracking-tighter">
+          Recent Activity
+          <div className="flex items-center gap-1">
+             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+             <span className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Live</span>
+          </div>
+        </h3>
+        <div className="space-y-3">
+          {stats?.recent_registrations?.map((reg, idx) => (
+            <motion.div 
+              key={idx}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="premium-glass p-4 border-white/5 flex items-center justify-between group hover:bg-emerald-500/5 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${
+                  reg.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                }`}>
+                  {reg.player_name.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white leading-none mb-1">{reg.player_name}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{reg.team_name}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${
+                  reg.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500'
+                }`}>{reg.status}</p>
+                <p className="text-[8px] text-slate-600 font-bold uppercase">{new Date(reg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            </motion.div>
+          ))}
+          {!stats?.recent_registrations?.length && (
+            <p className="text-center text-slate-500 text-xs font-medium py-10 italic">No registrations yet for this match.</p>
+          )}
+        </div>
+      </div>
+
           </motion.div>
         )}
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
-import { Phone, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck, Trophy } from 'lucide-react';
+import { Phone, Lock, LogIn, UserPlus, AlertCircle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -46,25 +46,20 @@ const LoginPage = () => {
     }
   };
 
-  const isPending = loginMutation.isPending || registerMutation.isPending;
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 relative overflow-hidden">
-      {isPending && <LoadingSpinner fullPage={true} />}
-
-      {/* Animated Background Orbs */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-500/5 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full bg-indigo-500/5 blur-[100px] animate-pulse" style={{ animationDelay: '4s' }} />
-      </div>
-
-      {/* Brand Header */}
+    <div className="min-h-[80vh] flex flex-col items-center justify-center px-6">
+      {(loginMutation.isPending || registerMutation.isPending) && <LoadingSpinner fullPage={true} />}
       <motion.div
-        initial={{ opacity: 0, y: -30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md premium-glass p-8 rounded-[40px] relative overflow-hidden"
       >
-        <div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500" />
+
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            {isLogin ? <LogIn className="text-emerald-400" size={32} /> : <UserPlus className="text-amber-400" size={32} />}
+          </div>
           <h2 className="text-3xl font-black text-white tracking-tight">
             {isLogin ? 'Admin Login' : 'Create Admin'}
           </h2>

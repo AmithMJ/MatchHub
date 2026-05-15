@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
-import { Search, Filter, Check, X, Eye, Phone, ChevronRight, User, Trophy, ShieldCheck } from 'lucide-react';
+import { Search, Filter, Check, X, Eye, Phone, ChevronRight, User, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -82,35 +82,33 @@ const PlayerList = () => {
 
   return (
     <div className="pb-32 px-5 pt-4 max-w-lg mx-auto">
-      {/* Mesh Overlay */}
-      <div className="mesh-overlay" />
 
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-emerald-500/10 blur-[100px] rounded-full opacity-30" />
-        <div className="relative premium-glass p-1.5 flex items-center rounded-3xl border-white/10 group focus-within:ring-2 ring-emerald-500/50 transition-all duration-500">
-          <div className="p-3.5 bg-emerald-500/10 rounded-2xl ml-1 border border-emerald-500/20">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full" />
+        <div className="relative premium-glass p-1.5 flex items-center rounded-2xl border-emerald-500/10">
+          <div className="p-3 bg-emerald-500/10 rounded-xl ml-1">
             <Search className="text-emerald-400" size={18} />
           </div>
           <input
             type="text"
             placeholder="Search players or teams..."
-            className="w-full bg-transparent border-none px-5 py-4 focus:outline-none font-bold text-white placeholder:text-slate-600 text-sm"
+            className="w-full bg-transparent border-none px-4 py-4 focus:outline-none font-bold text-white placeholder:text-emerald-100/30"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Tournament filter chips - Premium Scroll */}
-      <div className="flex gap-3 mb-10 overflow-x-auto pb-4 custom-scrollbar">
+      {/* Tournament filter chips */}
+      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
         {tournaments.map(t => (
           <button
             key={t}
             onClick={() => setTournamentFilter(t)}
-            className={`flex-shrink-0 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border transition-all duration-500 ${
+            className={`flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
               tournamentFilter === t
-                ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_10px_20px_rgba(16,185,129,0.3)]'
-                : 'premium-glass text-slate-500 border-white/5 hover:text-emerald-400 hover:border-emerald-500/30'
+                ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                : 'premium-glass text-emerald-500/60 border-emerald-500/10 hover:text-emerald-400'
             }`}
           >
             {t}
@@ -118,62 +116,56 @@ const PlayerList = () => {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <p className="subtext-elite">
-          Total Base: {filteredPlayers?.length || 0} Records
-          {tournamentFilter !== 'All' && <span className="ml-2 text-emerald-400">/ {tournamentFilter}</span>}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest">
+          {filteredPlayers?.length || 0} Players
+          {tournamentFilter !== 'All' && <span className="ml-1 text-emerald-400">· {tournamentFilter}</span>}
         </p>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         {filteredPlayers?.map((player, index) => (
           <motion.div
             key={player.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             onClick={() => setSelectedPlayer(player)}
-            className="premium-glass p-5 flex items-center gap-6 active:scale-[0.98] transition-all cursor-pointer hover:border-emerald-500/30 group border-white/5 shadow-2xl relative overflow-hidden"
+            className="premium-glass p-4 flex items-center gap-5 active:scale-[0.98] transition-all cursor-pointer hover:bg-emerald-500/5 group border-emerald-500/5"
           >
-            <div className="absolute -right-4 -bottom-4 w-20 h-20 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-              <Trophy size={80} className="text-emerald-400" />
-            </div>
-
             <div className="relative">
-              <div className="w-16 h-16 rounded-[22px] bg-slate-900 overflow-hidden border-2 border-white/10 group-hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-950 overflow-hidden border-2 border-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
                 <img
                   src={getSafeUrl(player.photo_url, player.player_name)}
                   alt={player.player_name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.player_name)}&background=random`;
                   }}
                 />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-950 rounded-lg flex items-center justify-center border border-white/10 shadow-lg">
-                <ShieldCheck size={12} className="text-emerald-500" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-900 rounded-lg flex items-center justify-center border-2 border-emerald-950 shadow-lg">
+                <Trophy size={12} className="text-emerald-400" />
               </div>
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-black text-lg text-white mb-1.5 leading-none truncate group-hover:text-emerald-400 transition-colors">{player.player_name}</h3>
-              <div className="flex items-center gap-2.5 mb-2">
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] group-hover:text-emerald-500/60 transition-colors">{player.role}</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20" />
-                <span className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.2em]">#{player.jersey_no}</span>
+              <h3 className="font-black text-lg text-white mb-0.5 leading-none truncate">{player.player_name}</h3>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase text-emerald-500/60 tracking-[0.2em]">{player.role}</span>
+                <div className="w-1 h-1 rounded-full bg-emerald-800" />
+                <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">#{player.jersey_no}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="p-1 bg-amber-500/10 rounded-md border border-amber-500/20">
-                  <Trophy size={10} className="text-amber-500" />
-                </div>
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate">{player.tournament_name || 'Free Agent'}</span>
+              <div className="flex items-center gap-1.5">
+                <Trophy size={10} className="text-amber-400" />
+                <span className="text-[9px] font-black text-amber-400/80 uppercase tracking-widest truncate">{player.tournament_name || 'No Tournament'}</span>
               </div>
             </div>
 
-            <div className="flex flex-col items-end justify-between self-stretch py-1">
+            <div className="flex flex-col items-end gap-3">
               <StatusBadge status={player.payment_status} />
-              <div className="p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+              <div className="p-1.5 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                 <ChevronRight size={16} className="text-emerald-400" />
               </div>
             </div>
